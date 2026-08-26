@@ -27,7 +27,25 @@ end)
 
 RegisterNetEvent('qb-scrapyard:server:ScrapVehicle', function(listKey)
     local src = source
-    if Config.CurrentVehicles[listKey] ~= nil then
+    local Player = QBCore.Functions.GetPlayer(src)
+    if not Player then return end
+
+    local ped = GetPlayerPed(src)
+    if ped <= 0 then return end
+
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    if vehicle <= 0 then return end
+
+    if GetPedInVehicleSeat(vehicle, -1) ~= ped then return end
+
+    local model = GetEntityModel(vehicle)
+    if model == 0 then return end
+
+    local vehicleKey = tonumber(listKey)
+    if not vehicleKey then return end
+
+    local currentVehicle = Config.CurrentVehicles[vehicleKey]
+    if currentVehicle ~= nil and GetHashKey(currentVehicle) == model then
         for _ = 1, math.random(2, 4), 1 do
             local item = Config.Items[math.random(1, #Config.Items)]
             exports['qb-inventory']:AddItem(src, item, math.random(25, 45), false, false, 'qb-scrapyard:server:ScrapVehicle')
@@ -41,7 +59,7 @@ RegisterNetEvent('qb-scrapyard:server:ScrapVehicle', function(listKey)
             exports['qb-inventory']:AddItem(src, 'rubber', random, false, false, 'qb-scrapyard:server:ScrapVehicle')
             TriggerClientEvent('qb-inventory:client:ItemBox', src, sharedItems['rubber'], 'add')
         end
-        Config.CurrentVehicles[listKey] = nil
+        Config.CurrentVehicles[vehicleKey] = nil
         TriggerClientEvent('qb-scapyard:client:setNewVehicles', -1, Config.CurrentVehicles)
     end
 end)
